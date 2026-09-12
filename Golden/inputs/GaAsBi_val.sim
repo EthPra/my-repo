@@ -1,0 +1,7 @@
+Version=1.6.4
+specimen=GaAsBi_val.sam
+model=GaAsBi_val.mdl
+microscope=GaAsBi_val.mic
+parameters=GaAsBi_val.par
+map=GaAsBi_val.mpp
+results=GaAsBi_val.rp

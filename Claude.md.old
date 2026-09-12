@@ -1,0 +1,102 @@
+# CLAUDE.md — MC X-Ray Automation Wrapper (GaAsBi EDXS dissertation)
+
+Project-level context for Claude Code. Applies to every session in this repo, across all build stages.
+
+## What this project is
+
+A Python wrapper around **MC X-Ray Lite v1.7.1** (console build, `console_mcxray_lite_x64.exe`, Windows x64) that automates ~24 Monte Carlo simulations of STEM-EDXS spectra from free-standing GaAs₁₋ₓBiₓ foils, and collects the per-line X-ray intensities into one clean, provenance-tracked table.
+
+The science: testing whether bismuth content x can be reliably quantified from X-ray line-intensity ratios despite two known peak overlaps (As Kα ≈ Bi Lα; Ga Lα + As Lα pile-up sum peak ≈ Bi Mα). The simulation knows the true x exactly, so quantification error is measurable against ground truth. This is the explicitly stated future work of Walther, *Journal of Microscopy*, 2025 (DOI 10.1111/jmi.70058), the project's central paper.
+
+## Governance — hard boundaries on Claude's role
+
+- **Mechanical work is delegated to Claude:** scripting, templating, parsing, file handling, plumbing, tests.
+- **Scientific judgement stays with Ethan:** ratio-to-composition inversion, k*-factor calibration decisions, the hypothesis verdict, interpretation of results.
+- **Physical quantities are never invented.** Line energies, densities, atomic weights, attenuation coefficients, cross-sections: either they come from a cited source already in this repo's docs, or Claude stops and asks. Values in code carry a source comment. Anything uncited is marked `# pending verification vs primary source`.
+- **The pipeline stores raw, unprocessed intensities.** No ratios, k-factors, or corrections computed inside the run loop — ever. Open atomic-data questions (see Open Questions) mean derived numbers may need re-deriving later; that must be possible from the stored table without re-running simulations.
+
+## Experimental design (locked — do not make these configurable without an explicit decision)
+
+| Parameter | Value |
+|---|---|
+| Beam energy | 200 keV |
+| Trajectories (archival runs) | 10⁶ (validation used 10⁵) |
+| Geometry | Free-standing foil, single BOX region, no substrate, vacuum both sides |
+| Take-off angle | `DetectorTOA=25`, azimuth `DetectorPitch=90` |
+| Detector noise | `DetectorNoise=50` (default; supervisor-confirmed correct) |
+| Photon count / channel width | `PhotonNbr=10000`, `EnergyChannelWidth=5` |
+
+**Run matrix (cross design, 15 runs — revised 2026-07-19 against the Aims & Objectives form):**
+- **Set A (thickness arm):** x = 0.2 fixed; thickness ∈ {2, 4, 8, 16, 32, 64, 128, 256, 512, 1024} nm = **10 runs**. Matches LO4 verbatim ("a geometric doubling series of ten values from 2 nm to 1024 nm"), which supersedes the form's earlier 5–500 nm on Walther's instruction (1 nm dropped as too noisy).
+- **Set B (composition arm):** 100 nm fixed; x ∈ {0.01, 0.02, 0.05, 0.1, 0.2} = **5 runs**.
+
+**Constraints taken from the A&O form (LO2/LO4), all confirmed present in the golden inputs:** 200 keV, 10⁶ trajectories, 25° take-off, free-standing foil with no substrate, and **x = 0.01–0.2**.
+
+Two consequences of that composition range, both resolved:
+- The old Set B reached x = 0.002 and 0.0002, **below the LO floor**. Replaced by the five values above. They span the full LO range, use write-up-friendly numbers, and include x = 0.1 — the validation composition — so Set B's x=0.1 point reproduces the validation configuration at 10⁶ trajectories, giving a free consistency check the matrix previously lacked.
+- The Set B statistical-floor worry is largely moot: at x = 0.0002 the strongest Bi line gave ~2 detected photons, but at the new floor x = 0.01 it is ~114 at 10⁵ (~1140 at 10⁶). Fixed dose at 10⁶ across the matrix is probably sufficient; the fixed-dose vs fixed-statistics decision is no longer pressing.
+
+⚠ **The window arm has no basis in the LOs.** LO4 varies thickness and Bi concentration only; LO2 fixes geometry and take-off angle but never mentions the entrance window. Set A is therefore 10 runs, not 20, and **spike (i) no longer gates freezing the matrix** — windowless became optional scope rather than a blocker. Confirm with Walther before treating as settled.
+
+## The MC X-Ray interface — established facts
+
+Everything here was established from a completed, verified validation run (x=0.1, 100 nm, 200 keV, ATW; all 18 line energies verified against Walther's Table 1 to ≤12 eV). The golden files from that run live in `golden/` and are **read-only ground truth**.
+
+**Input:** six files per run — `.sim` (master, references the other five), `.sam` (specimen), `.mic` (beam+detector), `.par` (counts, output basename), `.mdl` (physics models — pass through unchanged), `.rp` (output toggles — pass through unchanged). Flat in `C:\MCXRAY\Sim\` beside the exe.
+
+**Command:** `console_mcxray_lite_x64.exe --simulation-file <name>.sim`, cwd = the Sim folder. Outputs land in `Results\`.
+
+**Primary output:** `<basename>_XrayIntensities.csv` — per-line intensity table. This, not the broadened spectrum, is the analysis input.
+
+### Trap list — every one of these fails SILENTLY
+
+1. **Lengths are ÅNGSTRÖMS.** The v1.6 manual says nm; the binary uses Å. 100 nm = 1000 in the `.sam`. A nm value runs fine and simulates a 10× thinner foil.
+2. **Composition is WEIGHT fraction**, not atomic. Field: `WeightFraction`. Atomic fractions in that field run fine and simulate the wrong alloy.
+3. **`UserDefinedMassDensity` must be set** (g/cm³; ρ(x) = 5.32 + 0.20·x, anchors from Walther 2025 Fig. 3). Leaving 0 auto-mixes elemental densities — wrong for a zinc-blende alloy, no error raised. **⚠ The validation run itself hit this: the golden `.sam` carries `0`.** Elemental Ga/As/Bi densities all sit well above the compound's, because zinc-blende is an open structure (GaAs is 5.32 vs elemental Ga ~5.91, As ~5.73) — so any mixing rule built from them overestimates ρ by roughly 15–20%, inflating mass-thickness and over-attenuating the soft lines. Consequence: **golden files are ground truth for FORMAT AND FIELD SEMANTICS ONLY, never for physics values.**
+4. **`DetectorDiffusionLenght`** is misspelled in the format. Reproduce verbatim; correcting it breaks parsing.
+5. **CRLF line endings, with a trailing CRLF at EOF,** on all input files. Enforce explicitly. Asymmetry: **output CSVs are LF-only.** Do not harmonise.
+6. Output CSV: separator is **`", "` (comma + space)**, not a bare comma; rows end in a **trailing comma** (10 real fields, not 11); `Line` labels have **trailing spaces**; key on **`Atomic number`** (31/33/83), never `Index Atom`.
+7. The `.mic` has **no window field** — ATW (Al 0.02 µm + Moxtek 0.3 µm) is compiled in. A `window` parameter is legitimate run metadata but writes nothing. Never invent a field for it.
+8. The manual is out of date. **Golden files > documentation** for format; **neither** is authoritative for physics values, which come from cited primary sources.
+9. **"18 lines" is not a row count.** It is the number of lines cross-checked against Walther's Table 1. The intensity CSV has **21 rows** (Ga 6, As 6, Bi 9). Assert counts from the file, never from prose.
+
+## Build stages and their gates
+
+| Stage | Status / gate |
+|---|---|
+| 1. Input generator | Buildable now. Gate: structural identity vs golden (strict) + value accountability (two documented deviations: density 0→5.34, composition ≤1e-4). Window param is a no-op; windowless raises. |
+| 2. Output parser | Buildable now. Gate: reproduces golden validation table. |
+| 3. Single-run executor | Buildable now (command known, and generated inputs are confirmed to run — see REPORT.md §9). Parallel/subfolder variant gated on `.sim` path-resolution spike; optional (15 runs ≈ 50 min serial at 10⁶). |
+| 4. Matrix generator | Trivial. **Run list now frozen at 15** (Set A 10 + Set B 5) — no longer gated on the windowless spike, since the window arm is not in the LOs. |
+| 5. Aggregator + provenance manifest | Draftable; only properly testable once multi-run data exists. |
+| 6. Derivations (ratios, sum-peak synthesis) | Separate module, reads stored table only. Sum-peak route pending spike + supervisor guidance (sensitivity levels 0.1%/1%/10%; never a 15% default). |
+| 7. Inversion to x, verdict | **Not Claude's. Ethan's.** |
+
+## Open questions — do not resolve these unilaterally
+
+- **Which ρ(x) model the runs should use** (decision with Walther; **the live one**). Walther's published anchors (5.34 at x=0.1, 5.36 at x=0.2) do **not** follow from the lattice-parameter source the paper cites (Tixier 2003, DOI 10.1063/1.1565499): the correct values are ~5.61 and ~5.87, i.e. +5.0% and +9.5%, worth 0.9–2.2% on the diagnostic ratios. Full working and evidence chain in REPORT.md §10. **Nothing changed in code**; `spec.py` still emits Walther's values. Directly relevant to LO3, which names "density (Bi content)" as an object of study. Current intent: run both models.
+- **Windowless settable?** (spike, **downgraded**) — no longer gates the matrix, since the window arm is absent from the LOs (see Run matrix). Evidence leans NO: the `.mic` format contains no window field, and the manual's dialog shows none. Optional scope now.
+- **Does `Electrons per time slice` produce native pile-up?** (spike, pending) — decides sum-peak route.
+- **`.sim` path resolution + seed reproducibility** (spike, partially answered) — `RandomNumberSeed=0` is **not** deterministic: byte-identical inputs give outputs differing by up to 0.037% (REPORT.md §9.2). Whether a *non-zero* seed reproduces is untested. Gates parallelism only.
+- **Does `La` include Lα2? Bi M-lines beyond Mα?** (questions out to software author) — gate comparisons to Walther's published numbers, not the build. Partial evidence: Walther's Table 1 lists Bi Lα1 = 10839 eV and Lα2 = 10731 eV separately, while MC X-Ray reports a single `Line La` at 10840 eV — so the *energy* is Lα1, though that does not settle whether the *intensity* folds in Lα2.
+- **Secondary fluorescence modelled?** (question out to supervisor) — note Walther's paper states it is **not** accounted for in his own simulations, and offers it as a candidate explanation for the As K/L vs Ga K/L discrepancy. Whether MC X-Ray models it is a separate question, for the software author rather than the supervisor.
+- **Does LO3 really want Bi K lines?** They are at 77–87 keV and appear in our output, but Walther's own paper calls them "too hard X-rays for any standard EDS detector to be analysed". Parser keeps them regardless; clarify intent before they reach the write-up.
+
+If work touches one of these, stop at the boundary and leave a clearly marked seam (e.g. `NotImplementedError` for windowless), rather than inventing an answer.
+
+## Engineering conventions
+
+- Python ≥3.10; pandas + stdlib only.
+- Windows-safe throughout: `pathlib`, explicit encodings and newlines, no POSIX assumptions.
+- pytest; golden regression tests are the acceptance criterion for stages 1–2.
+- Small, explicit, boring functions. Comments cite sources for constants.
+- `golden/` is read-only. Never regenerate, edit, or "clean up" its contents.
+- **Output location is fixed: `C:\MCXRAY\Sim\Results\`**, via `BaseFileName=Results/<run_id>` in the `.par`. All ~19 output files per run are kept — do not prune, filter, or relocate them. `Results\` stays flat (no per-run subfolders; `.sim` path resolution is unresolved and run_id prefixes already prevent collisions).
+- **Input files live flat in `C:\MCXRAY\Sim\` at run time** — that is where the exe and `.sim` child-file resolution expect them; they must not be written into `Results\` or a subfolder before the run. After a run completes, the executor (Stage 3) **copies** the six inputs into `Results\` so that inputs and outputs share a run_id stem. Full provenance: any reported number traceable to its generating run.
+- With ~19 files per run × ~24 runs, `Results\` becomes a large flat directory. The Stage 5 provenance manifest is therefore the primary index into it, not a convenience.
+
+## Working style
+
+- When a design question isn't answered by this file or the task prompt: ask, don't decide.
+- Surface anomalies immediately (a diff that won't classify, an output column that doesn't match this spec) rather than working around them — an anomaly here usually means the interface understanding is wrong, which is exactly what the golden tests exist to catch.
+- Prefer a small validated step over a large unvalidated one.

@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>k* calibration curves — Set A (GaAsBi, x = 0.20)</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%89%3C/text%3E%3C/svg%3E">
+<!--
+  Standalone snapshot of the published artifact, taken 2026-08-17.
+  Live version (master copy): https://claude.ai/code/artifact/24626073-4341-4a38-9b72-88db52be13f2
+
+  Self-contained: no external scripts, styles, fonts or images. Opens offline from disk.
+  Follows the operating system light/dark setting.
+
+  This file = the artifact page source + the host skeleton the published version supplies
+  at serve time, i.e. everything from <!doctype html> down to </style> below, plus the
+  closing </body></html>. To republish this page as an artifact, strip that skeleton back
+  off -- the Artifact tool wraps the content itself and rejects a full document.
+-->
+<style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body, h1, h2, h3, h4, p, figure, blockquote, dl, dd, ul, ol { margin: 0; padding: 0; }
+    img, picture, svg { max-width: 100%; }
+    button, input, select, textarea { font: inherit; }
+</style>
+</head>
+<body>
+<style>
+:root {
+  color-scheme: light;
+  --plane:      #f4f6f5;
+  --surface:    #fbfcfb;
+  --sunk:       #eef1ef;
+  --ink:        #141a19;
+  --ink-2:      #4e5654;
+  --muted:      #838b89;
+  --grid:       #e4e8e6;
+  --axis:       #c3cac7;
+  --rule:       rgba(20, 26, 25, 0.11);
+  --s1:         #2a78d6;
+  --s2:         #eb6834;
+  --s3:         #1baf7a;
+  --flag:       #184f95;
+  --flag-wash:  rgba(42, 120, 214, 0.07);
+
+  --f-display: Georgia, "Iowan Old Style", "Times New Roman", ui-serif, serif;
+  --f-body:    "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --f-data:    "Cascadia Mono", Consolas, ui-monospace, "SF Mono", "Menlo", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --plane:     #0c0f0e;
+    --surface:   #171b1a;
+    --sunk:      #121615;
+    --ink:       #f2f5f4;
+    --ink-2:     #b6bebb;
+    --muted:     #7f8785;
+    --grid:      #242a28;
+    --axis:      #39403d;
+    --rule:      rgba(242, 245, 244, 0.13);
+    --s1:        #3987e5;
+    --s2:        #d95926;
+    --s3:        #199e70;
+    --flag:      #86b6ef;
+    --flag-wash: rgba(57, 135, 229, 0.10);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --plane:     #0c0f0e;
+  --surface:   #171b1a;
+  --sunk:      #121615;
+  --ink:       #f2f5f4;
+  --ink-2:     #b6bebb;
+  --muted:     #7f8785;
+  --grid:      #242a28;
+  --axis:      #39403d;
+  --rule:      rgba(242, 245, 244, 0.13);
+  --s1:        #3987e5;
+  --s2:        #d95926;
+  --s3:        #199e70;
+  --flag:      #86b6ef;
+  --flag-wash: rgba(57, 135, 229, 0.10);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--plane);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 56px 28px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 52px;
+}
+
+/* ── masthead ─────────────────────────────────────────── */
+
+.masthead { display: flex; flex-direction: column; gap: 18px; }
+
+.eyebrow {
+  font-family: var(--f-data);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+h1 {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: clamp(30px, 4.6vw, 44px);
+  line-height: 1.14;
+  letter-spacing: -0.012em;
+  margin: 0;
+  text-wrap: balance;
+}
+h1 em { font-style: italic; }
+
+.standfirst {
+  font-size: 17.5px;
+  line-height: 1.62;
+  color: var(--ink-2);
+  max-width: 65ch;
+  margin: 0;
+}
+
+/* the run-parameter strip reads as a figure caption block */
+.params {
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 16px 0;
+  margin-top: 6px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+  gap: 18px 26px;
+}
+.params div { display: flex; flex-direction: column; gap: 3px; }
+.params dt {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.params dd {
+  margin: 0;
+  font-family: var(--f-data);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* ── section furniture ────────────────────────────────── */
+
+section { display: flex; flex-direction: column; gap: 22px; }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 400;
+  font-size: 25px;
+  letter-spacing: -0.008em;
+  margin: 0;
+  text-wrap: balance;
+}
+h3 {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 15px;
+  margin: 0;
+  letter-spacing: -0.003em;
+}
+p { margin: 0; max-width: 68ch; }
+p + p { margin-top: 14px; }
+
+.section-head { display: flex; flex-direction: column; gap: 8px; }
+.section-head p { color: var(--ink-2); font-size: 15.5px; }
+
+/* ── the two headline tiles ───────────────────────────── */
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); gap: 16px; }
+
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 20px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tile .cap {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tile .figure {
+  font-family: var(--f-data);
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.tile .figure small { font-size: 19px; letter-spacing: 0; color: var(--ink-2); }
+.tile .route {
+  font-family: var(--f-data);
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.tile .gloss { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+
+/* ── definition control ───────────────────────────────── */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 20px;
+}
+.segmented {
+  display: inline-flex;
+  background: var(--sunk);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 3px;
+  gap: 3px;
+}
+.segmented button {
+  font-family: var(--f-data);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.segmented button:hover { color: var(--ink); }
+.segmented button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.09);
+}
+.segmented button:focus-visible { outline: 2px solid var(--flag); outline-offset: 1px; }
+
+.control-label {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; }
+.legend .item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--f-data);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.legend .swatch { width: 15px; height: 3px; border-radius: 2px; flex: none; }
+.legend .swatch.dash {
+  height: 0;
+  border-top: 2px dashed currentColor;
+  border-radius: 0;
+  opacity: 0.85;
+}
+
+/* ── chart grid ───────────────────────────────────────── */
+
+.facets { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+
+.facet {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 18px 18px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.facet .fname {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.facet .fsub {
+  font-family: var(--f-data);
+  font-size: 11.5px;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+.facet svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+
+.axis-title {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  fill: var(--muted);
+}
+.tick { font-family: var(--f-data); font-size: 10.5px; fill: var(--muted); }
+.dlabel { font-family: var(--f-data); font-size: 11px; }
+
+.tooltip {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 90ms ease;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+  padding: 10px 12px;
+  font-family: var(--f-data);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  min-width: 168px;
+}
+.tooltip.on { opacity: 1; }
+.tooltip .tt-head {
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+}
+.tooltip .tt-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.tooltip .tt-row .sw { width: 11px; height: 3px; border-radius: 2px; flex: none; }
+.tooltip .tt-row .nm { color: var(--ink-2); }
+.tooltip .tt-row .vl { margin-left: auto; color: var(--ink); }
+.tooltip .tt-row.sum .nm { font-style: italic; }
+
+/* ── literature cross-check ───────────────────────────── */
+
+.crosscheck {
+  background: var(--flag-wash);
+  border-left: 2px solid var(--flag);
+  border-radius: 0 3px 3px 0;
+  padding: 24px 26px 26px;
+  gap: 20px;
+}
+.crosscheck .cc-head { display: flex; flex-direction: column; gap: 9px; }
+.crosscheck .cap {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--flag);
+}
+.crosscheck h2 { font-size: 23px; }
+.crosscheck p { font-size: 15px; color: var(--ink-2); }
+.crosscheck p strong { color: var(--ink); font-weight: 600; }
+.cc-foot { font-size: 14.5px; }
+
+.cc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(184px, 1fr));
+  gap: 1px;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.cc-cell {
+  background: var(--surface);
+  padding: 16px 18px 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.cc-cap {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.cc-val {
+  font-family: var(--f-data);
+  font-size: 29px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.cc-val small { font-size: 17px; letter-spacing: 0; color: var(--ink-2); }
+.cc-note { font-family: var(--f-data); font-size: 11.5px; color: var(--ink-2); line-height: 1.45; }
+
+/* ── Walther-axes comparison charts ───────────────────── */
+
+.wfacets { display: grid; grid-template-columns: repeat(auto-fit, minmax(316px, 1fr)); gap: 16px; }
+.wfacet {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 18px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.wfacet .wname { font-family: var(--f-body); font-weight: 600; font-size: 14px; color: var(--ink); }
+.wfacet .wsub { font-family: var(--f-data); font-size: 11.5px; color: var(--muted); margin-top: -7px; }
+.wfacet svg { display: block; width: 100%; height: auto; touch-action: pan-y; }
+.wlegend { display: flex; flex-wrap: wrap; gap: 5px 14px; }
+.wlegend .item {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--f-data); font-size: 11.5px; color: var(--ink-2);
+}
+.wlegend .sw { width: 17px; height: 0; border-top-width: 2px; flex: none; }
+.wlegend .sw.solid { border-top-style: solid; }
+.wlegend .sw.dash { border-top-style: dashed; }
+.refband { font-family: var(--f-data); font-size: 10px; fill: var(--muted); }
+
+.finding {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 22px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.finding .cap {
+  font-family: var(--f-data); font-size: 10.5px; letter-spacing: 0.11em;
+  text-transform: uppercase; color: var(--muted);
+}
+.finding h3 { font-family: var(--f-display); font-weight: 400; font-size: 20px; }
+.finding p { font-size: 15px; color: var(--ink-2); }
+.finding p strong { color: var(--ink); font-weight: 600; }
+.finding code {
+  font-family: var(--f-data);
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--sunk);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+
+.matchtable { overflow-x: auto; }
+.matchtable table { font-size: 12.5px; }
+.matchtable td.flag { color: var(--s2); }
+.matchtable td.ok { color: var(--muted); }
+
+/* ── table ────────────────────────────────────────────── */
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.table-scroll { max-height: 520px; overflow: auto; }
+table { border-collapse: collapse; width: 100%; font-family: var(--f-data); font-size: 12.5px; }
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  text-align: right;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--axis);
+  white-space: nowrap;
+}
+thead th:first-child, thead th.l { text-align: left; }
+tbody td {
+  text-align: right;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--grid);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+tbody td:first-child, tbody td.l { text-align: left; }
+tbody td.k { color: var(--ink); }
+tbody tr:hover td { background: var(--sunk); }
+tbody tr.sep td { border-bottom: 1px solid var(--axis); }
+.route-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+.defn-tag { font-size: 11px; color: var(--muted); }
+
+.table-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--f-data);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ── method footer ────────────────────────────────────── */
+
+.method {
+  border-top: 1px solid var(--rule);
+  padding-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  gap: 28px 34px;
+}
+.method .block { display: flex; flex-direction: column; gap: 9px; }
+.method h3 {
+  font-family: var(--f-data);
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.method p { font-size: 14px; line-height: 1.58; color: var(--ink-2); }
+.method code {
+  font-family: var(--f-data);
+  font-size: 12.5px;
+  color: var(--ink);
+  background: var(--sunk);
+  padding: 1px 5px;
+  border-radius: 2px;
+}
+/* Equations are set the way a journal sets them: variables italic, element
+   symbols roman, in the display serif — not in the data mono, which has no
+   real italic and renders subscripts as afterthoughts. */
+.eqs { display: flex; flex-direction: column; gap: 11px; margin: 2px 0 0; }
+.eq {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+}
+.eq dt {
+  font-family: var(--f-data);
+  font-size: 10.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.eq dd {
+  margin: 0;
+  font-family: var(--f-display);
+  font-size: 15.5px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+/* Terms never split; a narrow column breaks between them instead of scrolling. */
+.eq .t { white-space: nowrap; }
+.eq var { font-style: italic; }
+.eq sub {
+  font-style: normal;
+  font-size: 0.66em;
+  line-height: 0;
+  vertical-align: -0.28em;
+  letter-spacing: 0.01em;
+}
+.eq .op { color: var(--ink-2); padding: 0 0.12em; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>MC X-Ray Lite 1.7.1</span>
+      <span>Set A · 10 runs</span>
+      <span>2026-08-08</span>
+    </div>
+    <h1>Empirical k* calibration against thickness, at a single known Bi content</h1>
+    <p class="standfirst">
+      Ten simulated free-standing GaAs<sub>0.80</sub>Bi<sub>0.20</sub> foils, 2 nm to 1024 nm,
+      solved for k* down all twenty-four available line routes. Because every run is simulated,
+      <em>x</em> is exact ground truth, so k* is obtained algebraically at each thickness rather
+      than fitted. The question the curves answer: which routes are stable enough in thickness
+      to quantify with, and which are eaten by absorption.
+    </p>
+    <dl class="params">
+      <div><dt>Composition</dt><dd>x = 0.20 (fixed)</dd></div>
+      <div><dt>Thickness</dt><dd>2 → 1024 nm, ×2</dd></div>
+      <div><dt>Beam</dt><dd>200 keV</dd></div>
+      <div><dt>Trajectories</dt><dd>10⁷ ≤ 16 nm · 10⁶ above</dd></div>
+      <div><dt>Density</dt><dd>5.692 g cm⁻³</dd></div>
+      <div><dt>Detector</dt><dd>Si:Li, 0.5 cm, TOA 25°</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <h2>The curves split cleanly in two</h2>
+      <p>
+        Every route whose denominator is a hard K line is essentially thickness-independent.
+        Every route whose denominator is a soft L line falls away as the foil thickens — the
+        L photons are absorbed on the way out, and k* absorbs that loss.
+      </p>
+    </div>
+    <div class="tiles">
+      <div class="tile">
+        <span class="cap">Flattest route · principal lines</span>
+        <span class="figure">0.7<small>%</small></span>
+        <span class="route">Bi Lα ÷ As Kα &nbsp;·&nbsp; 2.4192 → 2.4034</span>
+        <span class="gloss">
+          Total drift across a 512× change in thickness. For practical purposes this route needs
+          no thickness correction at all.
+        </span>
+      </div>
+      <div class="tile">
+        <span class="cap">Steepest route · principal lines</span>
+        <span class="figure">4.95<small>×</small></span>
+        <span class="route">Ga Kα ÷ As Lα &nbsp;·&nbsp; 0.7665 → 0.1548</span>
+        <span class="gloss">
+          Fall across the same range. A single k* would be meaningless here; the route is only
+          usable with thickness known independently.
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>All twenty-four curves</h2>
+      <p>
+        Four panels by the hardness of the two lines in the pair; colour is the element route
+        within each panel. Both axes are logarithmic and the k* scale is shared across all four
+        panels, so slopes and heights compare directly. Hover any panel for exact values.
+      </p>
+    </div>
+
+    <div class="controls">
+      <span class="control-label" id="defn-label">Line definition</span>
+      <div class="segmented" role="group" aria-labelledby="defn-label">
+        <button type="button" data-defn="p" aria-pressed="true">Principal</button>
+        <button type="button" data-defn="s" aria-pressed="false">Summed</button>
+        <button type="button" data-defn="b" aria-pressed="false">Both</button>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="facets" id="facets"></div>
+  </section>
+
+  <section class="crosscheck">
+    <div class="cc-head">
+      <span class="cap">Cross-check against the published value</span>
+      <h2>The flattest route reproduces Walther’s Figure 4 to 3%</h2>
+      <p>
+        Figure 4 of the paper quotes k*<sub>BiL,AsK</sub> and notes it is “almost constant for
+        thicknesses up to 1 µm as both X-ray lines are of very similar energy, so the selection of
+        this line pair would also seem well suited for quantification.” That is the same pair this
+        calibration independently identifies as the flattest of the twenty-four.
+      </p>
+    </div>
+    <div class="cc-grid">
+      <div class="cc-cell">
+        <span class="cc-cap">This work · Set A mean</span>
+        <span class="cc-val">2.4161</span>
+        <span class="cc-note">± 0.0051 across 2–1024 nm</span>
+      </div>
+      <div class="cc-cell">
+        <span class="cc-cap">Walther 2025 · Fig. 4</span>
+        <span class="cc-val">2.490</span>
+        <span class="cc-note">± 0.071</span>
+      </div>
+      <div class="cc-cell">
+        <span class="cc-cap">Difference</span>
+        <span class="cc-val">−3.0<small>%</small></span>
+        <span class="cc-note">1.04σ — just outside the quoted uncertainty</span>
+      </div>
+    </div>
+    <p class="cc-foot">
+      Arrived at independently on every axis: a different simulation code, a <strong>6.2% higher
+      mass density</strong> (5.692 vs 5.36 g cm⁻³ at x = 0.20), and a direct algebraic solve from
+      known <em>x</em> rather than the published k × escape-fraction decomposition. An offset of a
+      few percent is what those differences would predict, and the agreement is quantitative
+      support for the claim that density largely cancels in the calibrate-then-invert round trip.
+      The thinnest-foil value here, 2.4192, lands on the lower 1σ bound of 2.419.
+    </p>
+    <p class="cc-foot">
+      The qualitative claim reproduces too, and extends: 0.7% drift across a 512× change in
+      thickness, and — a test Figure 4 does not run — 0.01% spread across x = 0.01 to 0.20.
+    </p>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>On Walther’s axes</h2>
+      <p>
+        Figures 3 (bottom), 4 and 5 plot k* against a measurable <strong>K/L intensity
+        ratio</strong> rather than against thickness — which, in the paper’s words, “reduces both
+        the dependence on real foil thickness measurements and the effect of detector
+        sensitivities changing with detector type or entrance window thickness … providing an
+        inherent self-calibration.” The three panels below are drawn on the same axes and ranges
+        as his, for direct comparison. Colour is the heavy line; solid and dashed are the K and L
+        denominators. The grey band on each is the constant that figure’s caption quotes.
+      </p>
+    </div>
+    <div class="wfacets" id="wfacets"></div>
+  </section>
+
+  <div class="finding">
+    <span class="cap">What the comparison shows</span>
+    <h3>Eight of the twelve routes land on his. The four that don’t all contain Bi M.</h3>
+    <div class="matchtable">
+      <table>
+        <thead>
+          <tr>
+            <th class="l">Route</th><th>Ours, thin</th><th>Ours, thick</th>
+            <th class="l">His (read off the figures)</th><th class="l">Agreement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="l">k*<sub>BiL,GaK</sub></td><td>2.83</td><td>2.92</td><td class="l">flat ≈ 2.9</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>BiL,GaL</sub></td><td>2.14</td><td>0.76</td><td class="l">≈ 2.3 → 0.75</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>BiL,AsK</sub></td><td>2.42</td><td>2.40</td><td class="l">flat ≈ 2.49</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>BiL,AsL</sub></td><td>2.17</td><td>0.45</td><td class="l">≈ 2.0 → 0.42</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>GaK,AsK</sub></td><td>0.855</td><td>0.824</td><td class="l">flat ≈ 0.861</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>GaL,AsK</sub></td><td>1.13</td><td>3.16</td><td class="l">≈ 1.05 → 2.8</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>GaK,AsL</sub></td><td>0.767</td><td>0.155</td><td class="l">≈ 0.8 → 0.1</td><td class="l ok">matches</td></tr>
+          <tr class="sep"><td class="l">k*<sub>GaL,AsL</sub></td><td>1.01</td><td>0.59</td><td class="l">≈ 1.0 → 0.5</td><td class="l ok">matches</td></tr>
+          <tr><td class="l">k*<sub>BiM,GaK</sub></td><td>3.92</td><td>8.53</td><td class="l">≈ 2.5 → 5.9</td><td class="l flag">1.57× / 1.44×</td></tr>
+          <tr><td class="l">k*<sub>BiM,GaL</sub></td><td>2.96</td><td>2.23</td><td class="l">≈ 2.0 → 1.5</td><td class="l flag">1.48× / 1.48×</td></tr>
+          <tr><td class="l">k*<sub>BiM,AsK</sub></td><td>3.35</td><td>7.03</td><td class="l">≈ 2.3 → 5.15</td><td class="l flag">1.46× / 1.36×</td></tr>
+          <tr><td class="l">k*<sub>BiM,AsL</sub></td><td>3.00</td><td>1.32</td><td class="l">≈ 2.0 → 0.9</td><td class="l flag">1.50× / 1.47×</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      <strong>The offset is a constant, not a trend.</strong> It is ~1.5× at 2 nm and ~1.45× at
+      1024 nm. An absorption-modelling difference would grow with thickness; a fixed scale factor
+      on one line’s intensity would not. Since k* ∝ 1/I<sub>Bi</sub>, our Bi M intensity is
+      ~1.47× <em>lower</em> than the one behind these figures.
+    </p>
+    <p>
+      <strong>The likeliest explanation is already an open question on this project.</strong>
+      MC X-Ray’s output carries only <code>Line Ma</code>. If the published “Bi M” is the whole
+      M band, Mα would account for ~68% of it — the right direction, a plausible magnitude for
+      Bi with Mβ as the main companion, and it would produce a constant factor rather than a
+      thickness-dependent one. That is a hypothesis with a number attached, not a confirmation.
+    </p>
+    <p>
+      <strong>Where it bites.</strong> A constant scale factor on Bi M cancels in a same-route
+      calibrate-then-invert round trip, so the recovered compositions are likely unaffected. It
+      does not cancel for the sum-peak work: that artefact lands on Bi Mα and its size is
+      specified relative to the Bi M peak, so a “15% sum peak” is a different fraction of our
+      Bi M than of his. This needs settling before any sensitivity level means anything.
+    </p>
+    <p class="cc-foot">
+      The “his” values above are read off the printed figures by eye — call it ±0.1. The three
+      caption constants used in the panels are exact. A 1.4–1.6× effect is far larger than any
+      reading error, so the conclusion does not rest on the eyeballing.
+    </p>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>Full table</h2>
+      <p>
+        The same 240 values as plotted, following the control above. Every number is read
+        straight from the stored intensity table; nothing is smoothed, fitted or corrected.
+      </p>
+    </div>
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="l">Route</th>
+              <th class="l">Pair</th>
+              <th class="l">Definition</th>
+              <th id="th-thick" colspan="10">Thickness (nm)</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="table-foot">
+        <span id="row-count"></span>
+        <span>Aggregated\kstar_calibration_setA.csv</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="method">
+    <div class="block">
+      <h3>How k* was obtained</h3>
+      <p>
+        Solved directly from Walther’s equations at each run, using that run’s own measured
+        intensities and its known <em>x</em>. No thin-foil-k × escape-fraction decomposition,
+        no fitting.
+      </p>
+      <p>
+        <em>A</em> is the atomic weight — IUPAC/CIAAW 2024 — with ρ, the atomic density, a
+        separate quantity that does not enter these equations (Walther, personal communication,
+        10 Aug 2026). That confirmation is what makes the k* values above absolute rather than
+        correct only up to a cancelling factor.
+      </p>
+      <dl class="eqs">
+        <div class="eq">
+          <dt>Eq 2</dt>
+          <dd><span class="t"><var>k</var>*<sub>Bi,Ga</sub></span> <span class="op">=</span> <span class="t"><var>x</var></span> <span class="op">·</span> <span class="t">(<var>A</var><sub>Bi</sub>&#8202;/&#8202;<var>A</var><sub>Ga</sub>)</span> <span class="op">·</span> <span class="t">(<var>I</var><sub>Ga</sub>&#8202;/&#8202;<var>I</var><sub>Bi</sub>)</span></dd>
+        </div>
+        <div class="eq">
+          <dt>Eq 4</dt>
+          <dd><span class="t"><var>k</var>*<sub>Bi,As</sub></span> <span class="op">=</span> <span class="t">[<var>x</var>&#8202;/&#8202;(1&#8202;−&#8202;<var>x</var>)]</span> <span class="op">·</span> <span class="t">(<var>A</var><sub>Bi</sub>&#8202;/&#8202;<var>A</var><sub>As</sub>)</span> <span class="op">·</span> <span class="t">(<var>I</var><sub>As</sub>&#8202;/&#8202;<var>I</var><sub>Bi</sub>)</span></dd>
+        </div>
+        <div class="eq">
+          <dt>Eq 9</dt>
+          <dd><span class="t"><var>k</var>*<sub>Ga,As</sub></span> <span class="op">=</span> <span class="t">[1&#8202;/&#8202;(1&#8202;−&#8202;<var>x</var>)]</span> <span class="op">·</span> <span class="t">(<var>A</var><sub>Ga</sub>&#8202;/&#8202;<var>A</var><sub>As</sub>)</span> <span class="op">·</span> <span class="t">(<var>I</var><sub>As</sub>&#8202;/&#8202;<var>I</var><sub>Ga</sub>)</span></dd>
+        </div>
+      </dl>
+    </div>
+    <div class="block">
+      <h3>The two line definitions</h3>
+      <p>
+        <strong>Principal</strong> takes the single strongest line in the shell — Kα1, Lα, Mα.
+        <strong>Summed</strong> takes every reported sub-line in that shell: more counts, but it
+        pulls in lines that physically overlap other elements. They differ by up to 90%, so this
+        stays an open choice rather than a default.
+      </p>
+      <p>
+        Bi Lα1 and Lα2 sit 108 eV apart, inside one resolution element, so the reported Lα is
+        already the whole bundle under either definition.
+      </p>
+    </div>
+    <div class="block">
+      <h3>Provenance</h3>
+      <p>
+        Computed by <code>kfactors.calibration_curves</code> from
+        <code>Aggregated\combined_intensities.csv</code>, itself aggregated from the 15 production
+        runs with each <code>.sam</code> re-read and verified against its spec. Intensity column:
+        <em>Intensity Emitted Detected (photons)</em>. 133 tests green, golden gate clean.
+      </p>
+      <p>
+        Nothing here inverts a spectrum back to <em>x</em>. That is the held-out round trip, and
+        it is reported separately.
+      </p>
+    </div>
+    <div class="block">
+      <h3>Source</h3>
+      <p>
+        Walther, T. (2025). Determining bismuth content in GaAsBi alloys by energy-dispersive
+        X-ray spectroscopy. <em>Journal of Microscopy</em>. DOI 10.1111/jmi.70058.
+      </p>
+    </div>
+  </footer>
+
+</div>
+
+<!-- pointer-only affordance; the full table below is the accessible path to every value -->
+<div class="tooltip" id="tooltip" aria-hidden="true"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var THICK = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024];
+
+  // [route, heavy-slot (0 = harder heavy line, 1 = softer), heavy shell, light shell,
+  //  definition, k* at each of the ten thicknesses]
+  var RAW = [["Bi_As",0,"L","K","p",[2.4192,2.4192,2.4192,2.419,2.4188,2.4183,2.4172,2.4152,2.4112,2.4034]],["Bi_As",0,"L","K","s",[2.2696,2.2696,2.2695,2.2694,2.2692,2.2688,2.268,2.2665,2.2634,2.2573]],["Bi_As",0,"L","L","p",[2.1688,2.1583,2.1373,2.0961,2.0166,1.8688,1.6155,1.2414,0.8069,0.4515]],["Bi_As",0,"L","L","s",[1.5707,1.563,1.5477,1.5177,1.4597,1.3519,1.1675,0.8957,0.5809,0.3244]],["Bi_As",1,"M","K","p",[3.3493,3.3552,3.367,3.3907,3.4384,3.5352,3.7335,4.1467,5.0379,7.0261]],["Bi_As",1,"M","K","s",[5.8761,5.8864,5.9072,5.9488,6.0328,6.2032,6.5523,7.28,8.8506,12.3603]],["Bi_As",1,"M","L","p",[3.0026,2.9933,2.9747,2.9381,2.8666,2.7319,2.4952,2.1314,1.6859,1.3199]],["Bi_As",1,"M","L","s",[4.0666,4.0538,4.0285,3.9783,3.8806,3.6963,3.3729,2.8769,2.2715,1.7763]],["Bi_Ga",0,"L","K","p",[2.8293,2.8295,2.8298,2.8305,2.8319,2.8346,2.8401,2.851,2.8728,2.916]],["Bi_Ga",0,"L","K","s",[2.6246,2.6248,2.6251,2.6258,2.627,2.6295,2.6346,2.6447,2.6648,2.7048]],["Bi_Ga",0,"L","L","p",[2.14,2.1343,2.1231,2.1007,2.0569,1.9727,1.8182,1.5583,1.182,0.7612]],["Bi_Ga",0,"L","L","s",[1.4583,1.4536,1.4442,1.4256,1.3895,1.3209,1.1988,1.0031,0.739,0.4654]],["Bi_Ga",1,"M","K","p",[3.917,3.9242,3.9386,3.9674,4.0256,4.1439,4.3866,4.8949,6.0022,8.5247]],["Bi_Ga",1,"M","K","s",[6.7953,6.8078,6.8327,6.8829,6.984,7.1894,7.6113,8.4949,10.4204,14.8106]],["Bi_Ga",1,"M","L","p",[2.9627,2.9601,2.9549,2.9445,2.9239,2.8838,2.8082,2.6755,2.4697,2.2252]],["Bi_Ga",1,"M","L","s",[3.7757,3.7701,3.759,3.737,3.6939,3.6116,3.4632,3.2219,2.8898,2.5485]],["Ga_As",0,"K","K","p",[0.8551,0.855,0.8549,0.8546,0.8541,0.8531,0.8511,0.8471,0.8393,0.8242]],["Ga_As",0,"K","K","s",[0.8647,0.8647,0.8645,0.8643,0.8638,0.8628,0.8609,0.857,0.8494,0.8346]],["Ga_As",0,"K","L","p",[0.7665,0.7628,0.7553,0.7405,0.7121,0.6593,0.5688,0.4354,0.2809,0.1548]],["Ga_As",0,"K","L","s",[0.5984,0.5955,0.5896,0.578,0.5556,0.5141,0.4431,0.3387,0.218,0.1199]],["Ga_As",1,"L","K","p",[1.1305,1.1335,1.1395,1.1515,1.176,1.2259,1.3295,1.5499,2.0399,3.1575]],["Ga_As",1,"L","K","s",[1.5563,1.5613,1.5715,1.5919,1.6332,1.7176,1.892,2.2595,3.0627,4.85]],["Ga_As",1,"L","L","p",[1.0135,1.0112,1.0067,0.9978,0.9804,0.9473,0.8885,0.7966,0.6826,0.5931]],["Ga_As",1,"L","L","s",[1.0771,1.0753,1.0717,1.0646,1.0505,1.0234,0.9739,0.8929,0.786,0.697]]];
+
+  // Colour follows the element route, never its rank or its position on screen.
+  var ROUTES = [
+    { id: "Bi_Ga", label: "Bi / Ga", varName: "--s1" },
+    { id: "Bi_As", label: "Bi / As", varName: "--s2" },
+    { id: "Ga_As", label: "Ga / As", varName: "--s3" }
+  ];
+
+  // Panels are the four hard/soft line combinations — the thing that actually drives
+  // the split in the data, not an arbitrary grouping.
+  var FACETS = [
+    { hslot: 0, lshell: "K", name: "Hard heavy line ÷ hard light line", note: "K-shell denominator" },
+    { hslot: 0, lshell: "L", name: "Hard heavy line ÷ soft light line", note: "L-shell denominator" },
+    { hslot: 1, lshell: "K", name: "Soft heavy line ÷ hard light line", note: "K-shell denominator" },
+    { hslot: 1, lshell: "L", name: "Soft heavy line ÷ soft light line", note: "L-shell denominator" }
+  ];
+
+  var LINE_NAME = { K: "Kα", L: "Lα", M: "Mα" };
+  var ELEMENTS = { Bi_Ga: ["Bi", "Ga"], Bi_As: ["Bi", "As"], Ga_As: ["Ga", "As"] };
+
+  function pairLabel(route, hshell, lshell) {
+    var el = ELEMENTS[route];
+    return el[0] + " " + LINE_NAME[hshell] + " ÷ " + el[1] + " " + LINE_NAME[lshell];
+  }
+
+  function find(route, hslot, lshell, defn) {
+    for (var i = 0; i < RAW.length; i++) {
+      var r = RAW[i];
+      if (r[0] === route && r[1] === hslot && r[3] === lshell && r[4] === defn) return r;
+    }
+    return null;
+  }
+
+  function routeColor(id) {
+    for (var i = 0; i < ROUTES.length; i++) if (ROUTES[i].id === id) return "var(" + ROUTES[i].varName + ")";
+    return "var(--ink)";
+  }
+
+  // ── scales ────────────────────────────────────────────
+  // Shared across all four panels so heights and slopes are directly comparable.
+  var Y_TICKS = [0.1, 0.2, 0.5, 1, 2, 5, 10];
+  var Y_MIN = 0.1, Y_MAX = 16;
+  var W = 400, H = 268;
+  var M = { t: 12, r: 76, b: 40, l: 40 };
+  var PW = W - M.l - M.r, PH = H - M.t - M.b;
+
+  var lg = Math.log;
+  function xOf(i) { return M.l + (i / (THICK.length - 1)) * PW; }
+  function yOf(v) { return M.t + PH * (1 - (lg(v) - lg(Y_MIN)) / (lg(Y_MAX) - lg(Y_MIN))); }
+
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(name, attrs) {
+    var n = document.createElementNS(SVGNS, name);
+    for (var k in attrs) if (attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+
+  var state = { defn: "p" };
+  var tooltip = document.getElementById("tooltip");
+  var panels = [];
+
+  // ── build one panel ───────────────────────────────────
+  function buildFacet(spec) {
+    var card = document.createElement("div");
+    card.className = "facet";
+
+    var title = document.createElement("span");
+    title.className = "fname";
+    title.textContent = spec.name;
+    var sub = document.createElement("span");
+    sub.className = "fsub";
+    sub.textContent = spec.note;
+    card.appendChild(title);
+    card.appendChild(sub);
+
+    var svg = el("svg", { viewBox: "0 0 " + W + " " + H, role: "img" });
+    svg.setAttribute("aria-label", spec.name + " — k* against foil thickness, three element routes. Exact values are in the table below.");
+    card.appendChild(svg);
+
+    var gGrid = el("g", {});
+    var gData = el("g", {});
+    var gHover = el("g", { opacity: 0 });
+    svg.appendChild(gGrid);
+    svg.appendChild(gData);
+    svg.appendChild(gHover);
+
+    // horizontal gridlines + y ticks
+    Y_TICKS.forEach(function (v) {
+      var y = yOf(v);
+      gGrid.appendChild(el("line", { x1: M.l, x2: M.l + PW, y1: y, y2: y, stroke: "var(--grid)", "stroke-width": 1 }));
+      var t = el("text", { x: M.l - 8, y: y + 3.5, "text-anchor": "end", class: "tick" });
+      t.textContent = String(v);
+      gGrid.appendChild(t);
+    });
+
+    // vertical gridlines at every simulated thickness; label a readable subset
+    var LABELLED = { 2: 1, 8: 1, 32: 1, 128: 1, 512: 1 };
+    THICK.forEach(function (t, i) {
+      var x = xOf(i);
+      gGrid.appendChild(el("line", { x1: x, x2: x, y1: M.t, y2: M.t + PH, stroke: "var(--grid)", "stroke-width": 1 }));
+      if (LABELLED[t]) {
+        var lb = el("text", { x: x, y: M.t + PH + 16, "text-anchor": "middle", class: "tick" });
+        lb.textContent = String(t);
+        gGrid.appendChild(lb);
+      }
+    });
+
+    // baseline + left axis
+    gGrid.appendChild(el("line", { x1: M.l, x2: M.l + PW, y1: M.t + PH, y2: M.t + PH, stroke: "var(--axis)", "stroke-width": 1 }));
+    gGrid.appendChild(el("line", { x1: M.l, x2: M.l, y1: M.t, y2: M.t + PH, stroke: "var(--axis)", "stroke-width": 1 }));
+
+    var xt = el("text", { x: M.l + PW / 2, y: H - 6, "text-anchor": "middle", class: "axis-title" });
+    xt.textContent = "Foil thickness (nm), log";
+    gGrid.appendChild(xt);
+
+    var yt = el("text", { x: 0, y: 0, "text-anchor": "middle", class: "axis-title", transform: "translate(11," + (M.t + PH / 2) + ") rotate(-90)" });
+    yt.textContent = "k*, log";
+    gGrid.appendChild(yt);
+
+    // hover crosshair
+    var cross = el("line", { y1: M.t, y2: M.t + PH, stroke: "var(--axis)", "stroke-width": 1 });
+    gHover.appendChild(cross);
+    var dots = [];
+
+    var hit = el("rect", { x: M.l, y: M.t, width: PW, height: PH, fill: "transparent", "pointer-events": "all" });
+    svg.appendChild(hit);
+
+    card.__spec = spec;
+    card.__svg = svg;
+    card.__gData = gData;
+    card.__gHover = gHover;
+    card.__cross = cross;
+    card.__dots = dots;
+
+    function nearest(evt) {
+      var box = svg.getBoundingClientRect();
+      var rel = ((evt.clientX - box.left) / box.width) * W;
+      var frac = (rel - M.l) / PW;
+      var i = Math.round(frac * (THICK.length - 1));
+      return Math.max(0, Math.min(THICK.length - 1, i));
+    }
+
+    function show(evt) {
+      var i = nearest(evt);
+      var series = card.__series || [];
+      gHover.setAttribute("opacity", 1);
+      cross.setAttribute("x1", xOf(i));
+      cross.setAttribute("x2", xOf(i));
+
+      dots.forEach(function (d) { d.remove(); });
+      dots.length = 0;
+
+      var html = '<div class="tt-head">' + THICK[i] + " nm &nbsp;·&nbsp; x = 0.20</div>";
+      series.forEach(function (s) {
+        var c = el("circle", { cx: xOf(i), cy: yOf(s.values[i]), r: 4, fill: s.color, stroke: "var(--surface)", "stroke-width": 2 });
+        gHover.appendChild(c);
+        dots.push(c);
+        html += '<div class="tt-row' + (s.defn === "s" ? " sum" : "") + '">' +
+          '<span class="sw" style="background:' + s.color + '"></span>' +
+          '<span class="nm">' + s.pair + (s.defn === "s" ? " · summed" : "") + "</span>" +
+          '<span class="vl">' + s.values[i].toFixed(4) + "</span></div>";
+      });
+
+      tooltip.innerHTML = html;
+      tooltip.classList.add("on");
+      var tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+      var x = evt.clientX + 16, y = evt.clientY - th / 2;
+      if (x + tw > window.innerWidth - 10) x = evt.clientX - tw - 16;
+      if (y < 8) y = 8;
+      if (y + th > window.innerHeight - 8) y = window.innerHeight - th - 8;
+      tooltip.style.left = x + "px";
+      tooltip.style.top = y + "px";
+    }
+
+    function hide() {
+      gHover.setAttribute("opacity", 0);
+      tooltip.classList.remove("on");
+    }
+
+    hit.addEventListener("pointermove", show);
+    hit.addEventListener("pointerdown", show);
+    hit.addEventListener("pointerleave", hide);
+
+    return card;
+  }
+
+  // ── draw the series into a panel for the current definition ──
+  function drawFacet(card) {
+    var spec = card.__spec;
+    var gData = card.__gData;
+    while (gData.firstChild) gData.removeChild(gData.firstChild);
+
+    var defns = state.defn === "b" ? ["p", "s"] : [state.defn];
+    var series = [];
+
+    defns.forEach(function (defn) {
+      ROUTES.forEach(function (r) {
+        var row = find(r.id, spec.hslot, spec.lshell, defn);
+        if (!row) return;
+        series.push({
+          route: r.id,
+          label: r.label,
+          pair: pairLabel(r.id, row[2], row[3]),
+          color: routeColor(r.id),
+          defn: defn,
+          values: row[5]
+        });
+      });
+    });
+    card.__series = series;
+
+    // principal drawn solid and full strength; summed dashed and recessive, so the
+    // highlighted definition stays legible when both are on screen.
+    series.forEach(function (s) {
+      var d = s.values.map(function (v, i) { return (i ? "L" : "M") + xOf(i).toFixed(2) + " " + yOf(v).toFixed(2); }).join(" ");
+      var path = el("path", {
+        d: d,
+        fill: "none",
+        stroke: s.color,
+        "stroke-width": 2,
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round",
+        "stroke-dasharray": s.defn === "s" ? "5 4" : null,
+        opacity: s.defn === "s" && state.defn === "b" ? 0.55 : 1
+      });
+      gData.appendChild(path);
+    });
+
+    // Direct labels on the principal lines only — with six lines on screen the summed
+    // ones are carried by the legend and the tooltip instead.
+    var labelled = series.filter(function (s) { return s.defn === "p"; });
+    if (!labelled.length) labelled = series.slice();
+
+    var placed = labelled.map(function (s) {
+      return { s: s, y: yOf(s.values[s.values.length - 1]) };
+    }).sort(function (a, b) { return a.y - b.y; });
+
+    for (var i = 1; i < placed.length; i++) {
+      if (placed[i].y - placed[i - 1].y < 13) placed[i].y = placed[i - 1].y + 13;
+    }
+    var overflow = placed.length ? placed[placed.length - 1].y - (M.t + PH) : 0;
+    if (overflow > 0) placed.forEach(function (p) { p.y -= overflow; });
+
+    placed.forEach(function (p) {
+      var yEnd = yOf(p.s.values[p.s.values.length - 1]);
+      if (Math.abs(p.y - yEnd) > 2) {
+        gData.appendChild(el("path", {
+          d: "M" + (M.l + PW) + " " + yEnd.toFixed(2) + " L" + (M.l + PW + 7) + " " + p.y.toFixed(2),
+          fill: "none", stroke: p.s.color, "stroke-width": 1, opacity: 0.5
+        }));
+      }
+      gData.appendChild(el("circle", {
+        cx: M.l + PW, cy: yEnd, r: 3, fill: p.s.color, stroke: "var(--surface)", "stroke-width": 1.5
+      }));
+      var t = el("text", { x: M.l + PW + 11, y: p.y + 3.5, class: "dlabel", fill: p.s.color });
+      t.textContent = p.s.label;
+      gData.appendChild(t);
+    });
+  }
+
+  // ── legend ────────────────────────────────────────────
+  function drawLegend() {
+    var box = document.getElementById("legend");
+    box.innerHTML = "";
+    ROUTES.forEach(function (r) {
+      var item = document.createElement("span");
+      item.className = "item";
+      item.innerHTML = '<span class="swatch" style="background:var(' + r.varName + ')"></span>' + r.label;
+      box.appendChild(item);
+    });
+    if (state.defn === "b") {
+      var note = document.createElement("span");
+      note.className = "item";
+      note.innerHTML = '<span class="swatch dash"></span>summed (dashed)';
+      box.appendChild(note);
+    }
+  }
+
+  // ── table ─────────────────────────────────────────────
+  function drawTable() {
+    var tbody = document.getElementById("tbody");
+    tbody.innerHTML = "";
+    var wanted = state.defn === "b" ? ["p", "s"] : [state.defn];
+    var n = 0;
+
+    FACETS.forEach(function (spec, fi) {
+      ROUTES.forEach(function (r) {
+        wanted.forEach(function (defn) {
+          var row = find(r.id, spec.hslot, spec.lshell, defn);
+          if (!row) return;
+          var tr = document.createElement("tr");
+          if (r.id === "Ga_As" && defn === wanted[wanted.length - 1] && fi < FACETS.length - 1) tr.className = "sep";
+
+          var td0 = document.createElement("td");
+          td0.className = "l";
+          td0.innerHTML = '<span class="route-dot" style="background:var(' + r.varName + ')"></span>' + r.label;
+          tr.appendChild(td0);
+
+          var td1 = document.createElement("td");
+          td1.className = "l";
+          td1.textContent = pairLabel(r.id, row[2], row[3]);
+          tr.appendChild(td1);
+
+          var td2 = document.createElement("td");
+          td2.className = "l defn-tag";
+          td2.textContent = defn === "p" ? "principal" : "summed";
+          tr.appendChild(td2);
+
+          row[5].forEach(function (v) {
+            var td = document.createElement("td");
+            td.className = "k";
+            td.textContent = v.toFixed(4);
+            tr.appendChild(td);
+          });
+
+          tbody.appendChild(tr);
+          n++;
+        });
+      });
+    });
+
+    document.getElementById("row-count").textContent =
+      n + " curves × 10 thicknesses = " + (n * 10) + " values";
+  }
+
+  // thickness column headers
+  (function () {
+    var head = document.getElementById("th-thick");
+    var tr = head.parentNode;
+    head.remove();
+    THICK.forEach(function (t) {
+      var th = document.createElement("th");
+      th.textContent = t;
+      th.setAttribute("scope", "col");
+      tr.appendChild(th);
+    });
+  })();
+
+  // ── Walther-axes panels ───────────────────────────────
+  // k* re-indexed on the measurable K/L ratio, drawn on the same linear axes and ranges as
+  // his Figs 3 (bottom), 4 and 5 so the two can be held side by side. Curves that leave the
+  // published k* range are clipped, exactly as they are in his figures.
+
+  var KL = {"Fig 4|BiL,AsK|p":[[1.1155,2.4192],[1.1209,2.4192],[1.1319,2.4192],[1.154,2.419],[1.1994,2.4188],[1.2941,2.4183],[1.4963,2.4172],[1.9456,2.4152],[2.9883,2.4112],[5.3234,2.4034]],"Fig 4|BiL,AsK|s":[[1.445,2.2696],[1.4521,2.2696],[1.4664,2.2695],[1.4953,2.2694],[1.5546,2.2692],[1.6782,2.2688],[1.9426,2.268],[2.5305,2.2665],[3.8963,2.2634],[6.9585,2.2573]],"Fig 4|BiL,AsL|p":[[1.1155,2.1688],[1.1209,2.1583],[1.1319,2.1373],[1.154,2.0961],[1.1994,2.0166],[1.2941,1.8688],[1.4963,1.6155],[1.9456,1.2414],[2.9883,0.8069],[5.3234,0.4515]],"Fig 4|BiL,AsL|s":[[1.445,1.5707],[1.4521,1.563],[1.4664,1.5477],[1.4953,1.5177],[1.5546,1.4597],[1.6782,1.3519],[1.9426,1.1675],[2.5305,0.8957],[3.8963,0.5809],[6.9585,0.3244]],"Fig 4|BiM,AsK|p":[[1.1155,3.3493],[1.1209,3.3552],[1.1319,3.367],[1.154,3.3907],[1.1994,3.4384],[1.2941,3.5352],[1.4963,3.7335],[1.9456,4.1467],[2.9883,5.0379],[5.3234,7.0261]],"Fig 4|BiM,AsK|s":[[1.445,5.8761],[1.4521,5.8864],[1.4664,5.9072],[1.4953,5.9488],[1.5546,6.0328],[1.6782,6.2032],[1.9426,6.5523],[2.5305,7.28],[3.8963,8.8506],[6.9585,12.3603]],"Fig 4|BiM,AsL|p":[[1.1155,3.0026],[1.1209,2.9933],[1.1319,2.9747],[1.154,2.9381],[1.1994,2.8666],[1.2941,2.7319],[1.4963,2.4952],[1.9456,2.1314],[2.9883,1.6859],[5.3234,1.3199]],"Fig 4|BiM,AsL|s":[[1.445,4.0666],[1.4521,4.0538],[1.4664,4.0285],[1.4953,3.9783],[1.5546,3.8806],[1.6782,3.6963],[1.9426,3.3729],[2.5305,2.8769],[3.8963,2.2715],[6.9585,1.7763]],"Fig 3 (bottom)|BiL,GaK|p":[[1.3221,2.8293],[1.3257,2.8295],[1.3329,2.8298],[1.3474,2.8305],[1.3768,2.8319],[1.437,2.8346],[1.5621,2.8401],[1.8295,2.851],[2.4304,2.8728],[3.8309,2.916]],"Fig 3 (bottom)|BiL,GaK|s":[[1.7998,2.6246],[1.8057,2.6248],[1.8177,2.6251],[1.8418,2.6258],[1.8907,2.627],[1.9906,2.6295],[2.1978,2.6346],[2.6366,2.6447],[3.6059,2.6648],[5.8115,2.7048]],"Fig 3 (bottom)|BiL,GaL|p":[[1.3221,2.14],[1.3257,2.1343],[1.3329,2.1231],[1.3474,2.1007],[1.3768,2.0569],[1.437,1.9727],[1.5621,1.8182],[1.8295,1.5583],[2.4304,1.182],[3.8309,0.7612]],"Fig 3 (bottom)|BiL,GaL|s":[[1.7998,1.4583],[1.8057,1.4536],[1.8177,1.4442],[1.8418,1.4256],[1.8907,1.3895],[1.9906,1.3209],[2.1978,1.1988],[2.6366,1.0031],[3.6059,0.739],[5.8115,0.4654]],"Fig 3 (bottom)|BiM,GaK|p":[[1.3221,3.917],[1.3257,3.9242],[1.3329,3.9386],[1.3474,3.9674],[1.3768,4.0256],[1.437,4.1439],[1.5621,4.3866],[1.8295,4.8949],[2.4304,6.0022],[3.8309,8.5247]],"Fig 3 (bottom)|BiM,GaK|s":[[1.7998,6.7953],[1.8057,6.8078],[1.8177,6.8327],[1.8418,6.8829],[1.8907,6.984],[1.9906,7.1894],[2.1978,7.6113],[2.6366,8.4949],[3.6059,10.4204],[5.8115,14.8106]],"Fig 3 (bottom)|BiM,GaL|p":[[1.3221,2.9627],[1.3257,2.9601],[1.3329,2.9549],[1.3474,2.9445],[1.3768,2.9239],[1.437,2.8838],[1.5621,2.8082],[1.8295,2.6755],[2.4304,2.4697],[3.8309,2.2252]],"Fig 3 (bottom)|BiM,GaL|s":[[1.7998,3.7757],[1.8057,3.7701],[1.8177,3.759],[1.8418,3.737],[1.8907,3.6939],[1.9906,3.6116],[2.1978,3.4632],[2.6366,3.2219],[3.6059,2.8898],[5.8115,2.5485]],"Fig 5|GaK,AsK|p":[[1.3221,0.8551],[1.3257,0.855],[1.3329,0.8549],[1.3474,0.8546],[1.3768,0.8541],[1.437,0.8531],[1.5621,0.8511],[1.8295,0.8471],[2.4304,0.8393],[3.8309,0.8242]],"Fig 5|GaK,AsK|s":[[1.7998,0.8647],[1.8057,0.8647],[1.8177,0.8645],[1.8418,0.8643],[1.8907,0.8638],[1.9906,0.8628],[2.1978,0.8609],[2.6366,0.857],[3.6059,0.8494],[5.8115,0.8346]],"Fig 5|GaK,AsL|p":[[1.3221,0.7665],[1.3257,0.7628],[1.3329,0.7553],[1.3474,0.7405],[1.3768,0.7121],[1.437,0.6593],[1.5621,0.5688],[1.8295,0.4354],[2.4304,0.2809],[3.8309,0.1548]],"Fig 5|GaK,AsL|s":[[1.7998,0.5984],[1.8057,0.5955],[1.8177,0.5896],[1.8418,0.578],[1.8907,0.5556],[1.9906,0.5141],[2.1978,0.4431],[2.6366,0.3387],[3.6059,0.218],[5.8115,0.1199]],"Fig 5|GaL,AsK|p":[[1.3221,1.1305],[1.3257,1.1335],[1.3329,1.1395],[1.3474,1.1515],[1.3768,1.176],[1.437,1.2259],[1.5621,1.3295],[1.8295,1.5499],[2.4304,2.0399],[3.8309,3.1575]],"Fig 5|GaL,AsK|s":[[1.7998,1.5563],[1.8057,1.5613],[1.8177,1.5715],[1.8418,1.5919],[1.8907,1.6332],[1.9906,1.7176],[2.1978,1.892],[2.6366,2.2595],[3.6059,3.0627],[5.8115,4.85]],"Fig 5|GaL,AsL|p":[[1.3221,1.0135],[1.3257,1.0112],[1.3329,1.0067],[1.3474,0.9978],[1.3768,0.9804],[1.437,0.9473],[1.5621,0.8885],[1.8295,0.7966],[2.4304,0.6826],[3.8309,0.5931]],"Fig 5|GaL,AsL|s":[[1.7998,1.0771],[1.8057,1.0753],[1.8177,1.0717],[1.8418,1.0646],[1.8907,1.0505],[1.9906,1.0234],[2.1978,0.9739],[2.6366,0.8929],[3.6059,0.786],[5.8115,0.697]]};
+
+  // Colour is the heavy line, line style the denominator — a composite encoding, so four
+  // curves per panel never need four hues.
+  var WFIGS = [
+    {
+      key: "Fig 3 (bottom)", title: "Figure 3 (bottom) — Bi lines vs Ga lines",
+      xLabel: "Ga K/L ratio", xMax: 6, yMax: 6,
+      ref: { value: 2.895, err: 0.034, label: "k*BiL,GaK = 2.895 ± 0.034 (Walther)" },
+      series: [
+        { id: "BiL,GaK", heavy: 0, solid: true }, { id: "BiL,GaL", heavy: 0, solid: false },
+        { id: "BiM,GaK", heavy: 1, solid: true }, { id: "BiM,GaL", heavy: 1, solid: false }
+      ]
+    },
+    {
+      key: "Fig 4", title: "Figure 4 — Bi lines vs As lines",
+      xLabel: "As K/L ratio", xMax: 6, yMax: 6,
+      ref: { value: 2.490, err: 0.071, label: "k*BiL,AsK = 2.490 ± 0.071 (Walther)" },
+      series: [
+        { id: "BiL,AsK", heavy: 0, solid: true }, { id: "BiL,AsL", heavy: 0, solid: false },
+        { id: "BiM,AsK", heavy: 1, solid: true }, { id: "BiM,AsL", heavy: 1, solid: false }
+      ]
+    },
+    {
+      key: "Fig 5", title: "Figure 5 — Ga lines vs As lines",
+      xLabel: "Ga K/L ratio", xMax: 6, yMax: 3,
+      ref: { value: 0.861, err: 0.011, label: "k*GaK,AsK = 0.861 ± 0.011 (Walther)" },
+      series: [
+        { id: "GaK,AsK", heavy: 0, solid: true }, { id: "GaK,AsL", heavy: 0, solid: false },
+        { id: "GaL,AsK", heavy: 1, solid: true }, { id: "GaL,AsL", heavy: 1, solid: false }
+      ]
+    }
+  ];
+
+  var HEAVY_COLOR = ["var(--s1)", "var(--s2)"];
+  var WW = 400, WH = 296;
+  var WM = { t: 14, r: 16, b: 44, l: 44 };
+  var WPW = WW - WM.l - WM.r, WPH = WH - WM.t - WM.b;
+  var clipSeq = 0;
+
+  function buildWFacet(fig) {
+    var card = document.createElement("div");
+    card.className = "wfacet";
+
+    var h = document.createElement("span");
+    h.className = "wname";
+    h.textContent = fig.title;
+    var sub = document.createElement("span");
+    sub.className = "wsub";
+    sub.textContent = "same axes and ranges as the published figure";
+    card.appendChild(h);
+    card.appendChild(sub);
+
+    var svg = el("svg", { viewBox: "0 0 " + WW + " " + WH, role: "img" });
+    svg.setAttribute("aria-label", fig.title + " — our k* curves drawn on the published axes. Exact values are in the table below.");
+    card.appendChild(svg);
+
+    var clipId = "wclip" + (clipSeq++);
+    var defs = el("defs", {});
+    var cp = el("clipPath", { id: clipId });
+    cp.appendChild(el("rect", { x: WM.l, y: WM.t, width: WPW, height: WPH }));
+    defs.appendChild(cp);
+    svg.appendChild(defs);
+
+    var gGrid = el("g", {});
+    var gData = el("g", { "clip-path": "url(#" + clipId + ")" });
+    var gHover = el("g", { opacity: 0, "clip-path": "url(#" + clipId + ")" });
+    svg.appendChild(gGrid);
+    svg.appendChild(gData);
+    svg.appendChild(gHover);
+
+    var wx = function (v) { return WM.l + (v / fig.xMax) * WPW; };
+    var wy = function (v) { return WM.t + WPH * (1 - v / fig.yMax); };
+
+    // published constant, as a band — drawn under the data
+    var y0 = wy(fig.ref.value + fig.ref.err), y1 = wy(fig.ref.value - fig.ref.err);
+    gGrid.appendChild(el("rect", {
+      x: WM.l, y: y0, width: WPW, height: Math.max(1.5, y1 - y0),
+      fill: "var(--muted)", opacity: 0.22
+    }));
+
+    var yStep = fig.yMax / 6;
+    for (var i = 0; i <= 6; i++) {
+      var yv = i * yStep, y = wy(yv);
+      gGrid.appendChild(el("line", { x1: WM.l, x2: WM.l + WPW, y1: y, y2: y, stroke: "var(--grid)", "stroke-width": 1 }));
+      var t = el("text", { x: WM.l - 8, y: y + 3.5, "text-anchor": "end", class: "tick" });
+      t.textContent = yStep < 1 ? yv.toFixed(1) : String(yv);
+      gGrid.appendChild(t);
+    }
+    for (var j = 0; j <= 6; j++) {
+      var x = wx(j);
+      gGrid.appendChild(el("line", { x1: x, x2: x, y1: WM.t, y2: WM.t + WPH, stroke: "var(--grid)", "stroke-width": 1 }));
+      var lb = el("text", { x: x, y: WM.t + WPH + 16, "text-anchor": "middle", class: "tick" });
+      lb.textContent = String(j);
+      gGrid.appendChild(lb);
+    }
+    gGrid.appendChild(el("line", { x1: WM.l, x2: WM.l + WPW, y1: WM.t + WPH, y2: WM.t + WPH, stroke: "var(--axis)", "stroke-width": 1 }));
+    gGrid.appendChild(el("line", { x1: WM.l, x2: WM.l, y1: WM.t, y2: WM.t + WPH, stroke: "var(--axis)", "stroke-width": 1 }));
+
+    var xt = el("text", { x: WM.l + WPW / 2, y: WH - 8, "text-anchor": "middle", class: "axis-title" });
+    xt.textContent = fig.xLabel;
+    gGrid.appendChild(xt);
+    var yt = el("text", { x: 0, y: 0, "text-anchor": "middle", class: "axis-title", transform: "translate(12," + (WM.t + WPH / 2) + ") rotate(-90)" });
+    yt.textContent = "k*";
+    gGrid.appendChild(yt);
+
+    var rl = el("text", { x: WM.l + WPW - 4, y: wy(fig.ref.value) - 5, "text-anchor": "end", class: "refband" });
+    rl.textContent = fig.ref.label;
+    gGrid.appendChild(rl);
+
+    var legend = document.createElement("div");
+    legend.className = "wlegend";
+    card.appendChild(legend);
+
+    card.__fig = fig;
+    card.__svg = svg;
+    card.__gData = gData;
+    card.__gHover = gHover;
+    card.__legend = legend;
+    card.__wx = wx;
+    card.__wy = wy;
+
+    var hit = el("rect", { x: WM.l, y: WM.t, width: WPW, height: WPH, fill: "transparent", "pointer-events": "all" });
+    svg.appendChild(hit);
+
+    function show(evt) {
+      var series = card.__series || [];
+      if (!series.length) return;
+      var box = svg.getBoundingClientRect();
+      var cursor = ((evt.clientX - box.left) / box.width) * WW;
+
+      while (gHover.firstChild) gHover.removeChild(gHover.firstChild);
+      gHover.setAttribute("opacity", 1);
+
+      var html = "", anchor = null;
+      series.forEach(function (s) {
+        var best = 0, bestD = Infinity;
+        s.points.forEach(function (p, i) {
+          var d = Math.abs(wx(p[0]) - cursor);
+          if (d < bestD) { bestD = d; best = i; }
+        });
+        var pt = s.points[best];
+        if (anchor === null) anchor = pt[0];
+        if (pt[1] <= fig.yMax) {
+          gHover.appendChild(el("circle", {
+            cx: wx(pt[0]), cy: wy(pt[1]), r: 4, fill: s.color,
+            stroke: "var(--surface)", "stroke-width": 2
+          }));
+        }
+        html += '<div class="tt-row' + (s.defn === "s" ? " sum" : "") + '">' +
+          '<span class="sw" style="background:' + s.color + '"></span>' +
+          '<span class="nm">' + s.label + (s.defn === "s" ? " · summed" : "") + "</span>" +
+          '<span class="vl">' + pt[1].toFixed(4) + "</span></div>";
+      });
+
+      gHover.insertBefore(el("line", {
+        x1: wx(anchor), x2: wx(anchor), y1: WM.t, y2: WM.t + WPH,
+        stroke: "var(--axis)", "stroke-width": 1
+      }), gHover.firstChild);
+
+      tooltip.innerHTML = '<div class="tt-head">' + fig.xLabel + " " + anchor.toFixed(3) + "</div>" + html;
+      tooltip.classList.add("on");
+      var tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+      var px = evt.clientX + 16, py = evt.clientY - th / 2;
+      if (px + tw > window.innerWidth - 10) px = evt.clientX - tw - 16;
+      if (py < 8) py = 8;
+      if (py + th > window.innerHeight - 8) py = window.innerHeight - th - 8;
+      tooltip.style.left = px + "px";
+      tooltip.style.top = py + "px";
+    }
+
+    function hide() {
+      gHover.setAttribute("opacity", 0);
+      tooltip.classList.remove("on");
+    }
+
+    hit.addEventListener("pointermove", show);
+    hit.addEventListener("pointerdown", show);
+    hit.addEventListener("pointerleave", hide);
+
+    return card;
+  }
+
+  function drawWFacet(card) {
+    var fig = card.__fig, gData = card.__gData, wx = card.__wx, wy = card.__wy;
+    while (gData.firstChild) gData.removeChild(gData.firstChild);
+
+    var defns = state.defn === "b" ? ["p", "s"] : [state.defn];
+    var series = [];
+    defns.forEach(function (defn) {
+      fig.series.forEach(function (s) {
+        var pts = KL[fig.key + "|" + s.id + "|" + defn];
+        if (!pts) return;
+        series.push({
+          label: "k*" + s.id, color: HEAVY_COLOR[s.heavy], solid: s.solid,
+          defn: defn, points: pts
+        });
+      });
+    });
+    card.__series = series;
+
+    series.forEach(function (s) {
+      var d = s.points.map(function (p, i) {
+        return (i ? "L" : "M") + wx(p[0]).toFixed(2) + " " + wy(p[1]).toFixed(2);
+      }).join(" ");
+      gData.appendChild(el("path", {
+        d: d, fill: "none", stroke: s.color, "stroke-width": 2,
+        "stroke-linecap": "round", "stroke-linejoin": "round",
+        "stroke-dasharray": s.solid ? null : "5 4",
+        opacity: s.defn === "s" && state.defn === "b" ? 0.5 : 1
+      }));
+      s.points.forEach(function (p) {
+        if (p[1] > fig.yMax) return;
+        gData.appendChild(el("circle", {
+          cx: wx(p[0]), cy: wy(p[1]), r: 2.6, fill: s.color,
+          stroke: "var(--surface)", "stroke-width": 1.5,
+          opacity: s.defn === "s" && state.defn === "b" ? 0.5 : 1
+        }));
+      });
+    });
+
+    var legend = card.__legend;
+    legend.innerHTML = "";
+    fig.series.forEach(function (s) {
+      var item = document.createElement("span");
+      item.className = "item";
+      item.innerHTML = '<span class="sw ' + (s.solid ? "solid" : "dash") +
+        '" style="border-top-color:' + HEAVY_COLOR[s.heavy] + '"></span>k*' + s.id;
+      legend.appendChild(item);
+    });
+  }
+
+  var wfacetBox = document.getElementById("wfacets");
+  var wpanels = [];
+  WFIGS.forEach(function (fig) {
+    var card = buildWFacet(fig);
+    wfacetBox.appendChild(card);
+    wpanels.push(card);
+  });
+
+  // ── wire up ───────────────────────────────────────────
+  var facetBox = document.getElementById("facets");
+  FACETS.forEach(function (spec) {
+    var card = buildFacet(spec);
+    facetBox.appendChild(card);
+    panels.push(card);
+  });
+
+  function render() {
+    panels.forEach(drawFacet);
+    wpanels.forEach(drawWFacet);
+    drawLegend();
+    drawTable();
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".segmented button"), function (btn) {
+    btn.addEventListener("click", function () {
+      state.defn = btn.getAttribute("data-defn");
+      Array.prototype.forEach.call(document.querySelectorAll(".segmented button"), function (b) {
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      render();
+    });
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>

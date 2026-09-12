@@ -1,0 +1,82 @@
+Model Parameters:
+Atom Mean Ionization Potential: Joy & Luo
+Atom Screening: Henoc & Maurice
+Atom Cross Section: Mott & Browning
+Atom Screening: Henoc & Maurice
+Atom Collision: Browning
+Atom Screening: Henoc & Maurice
+Atom Electron Range: Kanaya & Okayama
+Region Energy Loss: Bethe & Joy & Luo
+XRay Characteristic Cross Section: Bote (2009)
+XRay Bremsstrahlung Cross Section: Kirkpatrick & Wiedman
+
+Simulation Parameters:
+   Total simulated electrons      = 100000
+   Total simulated photons in EDS = 10000
+   Number of energy windows       = 64
+   Number of layers in PhiRoX     = 128
+   Number of layers in PhiRoY     = 128
+   Number of layers in PhiRoZ     = 128
+   Number of channels in spectras = 40000
+   Spectras interpolation type    = 2
+   EDS spectras maximum energy    = 200
+   Generalized Walk               = 0
+   Use Live Time                  = 0
+   Live Time Max                  = 1e-14
+
+Beam Parameters:
+   Electron incident energy (keV)          = 200
+   Beam Current (A)                        = 1e-09
+   Acquisition Time (s)                    = 100
+   Diameter with 90%% of the electrons (A) = 10
+   Beam position X (A)                     = 0
+   Beam position Y (A)                     = 0
+   Beam position Z (A)                     = 0
+   Tilt angle (deg)                        = 0
+   Rotation angle (deg)                    = 0
+   Beam direction X                        = 0
+   Beam direction Y                        = 0
+   Beam direction Z                        = 1
+   Gaussian Mean                           = 0
+   Gaussian Sigma                          = 3.0303
+   The negative Z axis is the e Beam axis
+   A positive tilt angle gives a negative projection on X Axis
+   The Y axis is the rotation axis
+
+Detector Parameters:
+   Detector crystal is           Silicium
+   Crystal atomic number (g/cm3) = 14
+   Crystal density (g/cm3)       = 2.33
+   Crystal thichness (cm)        = 0.3
+   Crystal radius (cm)           = 0.3
+   Distance beam-detector (cm)   = 4
+   Energy factor (eV)         = 2.6231
+   Noise at EDS detector (eV) = 50
+   Dead layer (A)            = 2000
+   Diffusion length (A)      = 500
+   Surface quality factor    = 1
+   Thickness of Be window (um)    = 0
+   Thickness of Al window (um)    = 0.02
+   Thickness of Ti window (um)    = 0
+   Thickness of Oil (um)          = 0
+   Thickness of H2O (um)          = 0
+   Thickness of Moxtek (um)       = 0.3
+   Thickness of air path (cm)     = 0
+   Angle between detector axis and specimen normal (deg)    = 65
+   Angle between detector and x axis on the X-Y plane (deg) = 90
+   Detector direction X      = 3.53143e-12
+   Detector direction Y      = 0.906308
+   Detector direction Z      = 0.422618
+   Take Off Angle at Normal Incidence (deg) = 25
+   Effective Take Off Angle (deg)           = 25
+   1.0 / sin(Xsi) (deg)                     = 2.3662
+   Solid angle of the detector (sr)        = 0.0175973
+   Fractional solid angle of the detector        = 0.00140035
+   BF annealing angles (deg)    = 0
+   BF annealing angles (deg)    = 0.572958
+   DF annealing angles (deg)    = 1.14592
+   DF annealing angles (deg)    = 5.72958
+   HAADF annealing angles (deg) = 8.59437
+   HAADF annealing angles (deg) = 17.1887
+   xrayBackgroundConstant         = 3.75926e+35
+   xrayCharacteristicConstant     = 6.24151e+11

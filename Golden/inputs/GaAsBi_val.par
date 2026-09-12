@@ -1,0 +1,13 @@
+Version=1.6.4
+BaseFileName=Results/GaAsBi_100nm_x010_ATW_rho534
+ElectronNbr=100000
+PhotonNbr=10000
+WindowNbr=64
+FilmNbrX=128
+FilmNbrY=128
+FilmNbrZ=128
+EnergyChannelWidth=5
+SpectraInterpolation=2
+ElasticCrossSectionScalingFactor=1.00000
+EnergyLossScalingFactor=1.00000
+RandomNumberSeed=0

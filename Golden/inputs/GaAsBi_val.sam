@@ -1,0 +1,12 @@
+Version=1.6.4
+NumberRegions=1
+NumberElements=3
+AtomicNumber=31
+WeightFraction=0.441135
+AtomicNumber=33
+WeightFraction=0.426632
+AtomicNumber=83
+WeightFraction=0.132233
+UserDefinedMassDensity=5.34
+RegionType=BOX
+RegionParameters=-10000000000.000000 10000000000.000000 -10000000000.000000 10000000000.000000 0.000000 1000.000000
